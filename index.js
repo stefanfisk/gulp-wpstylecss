@@ -1,49 +1,85 @@
-var through = require("through2"),
-	gutil = require("gulp-util");
+var fs = require('fs');
+var Readable = require('stream').Readable;
+var gutil = require('gulp-util');
+var _ = require('lodash');
+var _s = require('underscore.string');
 
-module.exports = function (param) {
-	"use strict";
+var pkg = JSON.parse(fs.readFileSync('package.json', {encoding: 'utf8'}));
 
-	// if necessary check for required param(s), e.g. options hash, etc.
-	if (!param) {
-		throw new gutil.PluginError("gulp-wpstylecss", "No param supplied");
-	}
+module.exports = function (options) {
+  'use strict';
 
-	// see "Writing a plugin"
-	// https://github.com/gulpjs/gulp/blob/master/docs/writing-a-plugin/README.md
-	function wpstylecss(file, enc, callback) {
-		/*jshint validthis:true*/
+  options = _.defaults(options || {}, {
+    path: 'style.css',
+    name: _s.titleize(_s.humanize(pkg.name)),
+    description: pkg.description,
+    version: pkg.version,
+    uri: pkg.homepage,
+    tags: pkg.keywords,
+    author: pkg.author.name,
+    authorUri: pkg.author.url,
+    license: pkg.license,
+    licenseUri: null
+  });
 
-		// Do nothing if no contents
-		if (file.isNull()) {
-			this.push(file);
-			return callback();
-		}
+  if (!options.path) {
+    throw new gutil.PluginError('gulp-wpstylecss', '`path` is required!');
+  }
 
-		if (file.isStream()) {
+  if (!options.name) {
+    throw new gutil.PluginError('gulp-wpstylecss', '`name` is required!');
+  }
 
-			// http://nodejs.org/api/stream.html
-			// http://nodejs.org/api/child_process.html
-			// https://github.com/dominictarr/event-stream
+  /*
+  Theme Name:     <%= options.name %>
+  Description:    <%= options.description %>
+  Version:        <%= options.version %>
+  Theme URI:      <%= options.homepage %>
+  Tags:           <%= options.keywords %>
+  Author:         <%= options.author.name %>
+  Author URI:     <%= options.author.url %>
+  License:        <%= options.license %>
+  License URI:    <%= options.licenseUri %>
+  */
+  var contents = '/*\n';
 
-			// accepting streams is optional
-			this.emit("error",
-				new gutil.PluginError("gulp-wpstylecss", "Stream content is not supported"));
-			return callback();
-		}
+  contents += 'Theme Name:     ' + options.name + '\n';
 
-		// check if file.contents is a `Buffer`
-		if (file.isBuffer()) {
+  if (options.description) {
+    contents += 'Description:    ' + options.description + '\n';
+  }
+  if (options.version) {
+    contents += 'Version:        ' + options.version + '\n';
+  }
+  if (options.uri) {
+    contents += 'Theme URI:      ' + options.uri + '\n';
+  }
+  if (options.tags) {
+    contents += 'Tags:           ' + options.tags + '\n';
+  }
+  if (options.author.name) {
+    contents += 'Author:         ' + options.author.name + '\n';
+  }
+  if (options.author.uri) {
+    contents += 'Author URI:     ' + options.author.uri + '\n';
+  }
+  if (options.license) {
+    contents += 'License:        ' + options.license + '\n';
+  }
+  if (options.licenseUri) {
+    contents += 'License URI:    ' + options.licenseUri + '\n';
+  }
 
-			// manipulate buffer in some way
-			// http://nodejs.org/api/buffer.html
-			file.contents = new Buffer(String(file.contents) + "\n" + param);
+  contents += '*/\n';
 
-			this.push(file);
+  var stream = new Readable({objectMode: true});
 
-		}
-		return callback();
-	}
+  stream.push(new gutil.File({
+    path: options.path,
+    contents: new Buffer(contents)
+  }));
 
-	return through.obj(wpstylecss);
+  stream.push(null);
+
+  return stream;
 };

@@ -1,112 +1,82 @@
 /*global describe, it*/
-"use strict";
+'use strict';
 
-var fs = require("fs"),
-	es = require("event-stream"),
-	should = require("should");
+var fs = require('fs'),
+should = require('should');
 
-require("mocha");
+require('mocha');
 
-delete require.cache[require.resolve("../")];
+delete require.cache[require.resolve('../')];
 
-var gutil = require("gulp-util"),
-	wpstylecss = require("../");
+var gutil = require('gulp-util'),
+wpstylecss = require('../');
 
-describe("gulp-wpstylecss", function () {
+describe('gulp-wpstylecss', function () {
+  it('should produce expected file from package.json', function (done) {
+    var expectedFile = new gutil.File({
+      path: 'style.css',
+      cwd: null,
+      base: null,
+      contents: fs.readFileSync('test/expected/default.style.css')
+    });
 
-	var expectedFile = new gutil.File({
-		path: "test/expected/hello.txt",
-		cwd: "test/",
-		base: "test/expected",
-		contents: fs.readFileSync("test/expected/hello.txt")
-	});
+    var stream = wpstylecss();
 
-	it("should produce expected file via buffer", function (done) {
+    stream.on('error', function (err) {
+      should.exist(err);
+      done(err);
+    });
 
-		var srcFile = new gutil.File({
-			path: "test/fixtures/hello.txt",
-			cwd: "test/",
-			base: "test/fixtures",
-			contents: fs.readFileSync("test/fixtures/hello.txt")
-		});
+    stream.on('data', function (newFile) {
+      should.exist(newFile);
+      should.exist(newFile.contents);
 
-		var stream = wpstylecss("World");
+      String(newFile.path).should.equal(String(expectedFile.path));
+      String(newFile.cwd).should.equal(String(expectedFile.cwd));
+      String(newFile.base).should.equal(String(expectedFile.base));
+      String(newFile.contents).should.equal(String(expectedFile.contents));
 
-		stream.on("error", function(err) {
-			should.exist(err);
-			done(err);
-		});
+      done();
+    });
+  });
 
-		stream.on("data", function (newFile) {
+  it('should produce expected file via stream', function (done) {
+    var expectedFile = new gutil.File({
+      path: 'PATH',
+      cwd: null,
+      base: null,
+      contents: fs.readFileSync('test/expected/custom.style.css')
+    });
 
-			should.exist(newFile);
-			should.exist(newFile.contents);
+    var stream = wpstylecss({
+      path: 'PATH',
+      name: 'THEME_NAME',
+      description: 'DESCRIPTION',
+      version: 'VERSION',
+      uri: 'THEME_URI',
+      tags: ['TAG1', 'TAG2', 'TAG3'],
+      author: 'AUTHOR',
+      authorUri: 'AUTHOR_URI',
+      license: 'LICENSE',
+      licenseUri: 'LICENSE_URI'
+    });
 
-			String(newFile.contents).should.equal(String(expectedFile.contents));
-			done();
-		});
+    stream.on('error', function (err) {
+      should.exist(err);
+      done(err);
+    });
 
-		stream.write(srcFile);
-		stream.end();
-	});
+    stream.on('data', function (newFile) {
+      should.exist(newFile);
+      should.exist(newFile.contents);
 
-	it("should error on stream", function (done) {
+      String(newFile.path).should.equal(String(expectedFile.path));
+      String(newFile.cwd).should.equal(String(expectedFile.cwd));
+      String(newFile.base).should.equal(String(expectedFile.base));
+      String(newFile.contents).should.equal(String(expectedFile.contents));
 
-		var srcFile = new gutil.File({
-			path: "test/fixtures/hello.txt",
-			cwd: "test/",
-			base: "test/fixtures",
-			contents: fs.createReadStream("test/fixtures/hello.txt")
-		});
+      done();
+    });
+  });
 
-		var stream = wpstylecss("World");
-
-		stream.on("error", function(err) {
-			should.exist(err);
-			done();
-		});
-
-		stream.on("data", function (newFile) {
-			newFile.contents.pipe(es.wait(function(err, data) {
-				done(err);
-			}));
-		});
-
-		stream.write(srcFile);
-		stream.end();
-	});
-
-	/*
-	it("should produce expected file via stream", function (done) {
-
-		var srcFile = new gutil.File({
-			path: "test/fixtures/hello.txt",
-			cwd: "test/",
-			base: "test/fixtures",
-			contents: fs.createReadStream("test/fixtures/hello.txt")
-		});
-
-		var stream = wpstylecss("World");
-
-		stream.on("error", function(err) {
-			should.exist(err);
-			done();
-		});
-
-		stream.on("data", function (newFile) {
-
-			should.exist(newFile);
-			should.exist(newFile.contents);
-
-			newFile.contents.pipe(es.wait(function(err, data) {
-				should.not.exist(err);
-				data.should.equal(String(expectedFile.contents));
-				done();
-			}));
-		});
-
-		stream.write(srcFile);
-		stream.end();
-	});
-	*/
 });

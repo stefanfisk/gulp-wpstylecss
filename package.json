@@ -1,15 +1,14 @@
-
 {
   "name": "gulp-wpstylecss",
   "version": "0.0.0",
   "description": "A plugin for Gulp",
   "keywords": [
-    "gulpplugin"
+    "gulpplugin",
+    "wordpress"
   ],
   "author": {
     "name": "Stefan Fisk",
-    "email": "contact@stefanfisk.com",
-    "url": "https://github.com/stefanfisk"
+    "url": "http://stefanfisk.com"
   },
   "repository": "stefanfisk/gulp-wpstylecss",
   "scripts": {
@@ -17,8 +16,9 @@
     "coveralls": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
   },
   "dependencies": {
-    "through2": "*",
-    "gulp-util": "~2.2.0"
+    "gulp-util": "~2.2.0",
+    "lodash": "^2.4.1",
+    "underscore.string": "^2.3.3"
   },
   "devDependencies": {
     "mocha": "*",

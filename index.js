@@ -76,7 +76,7 @@ module.exports = function (options) {
 
   stream.push(new gutil.File({
     path: options.path,
-    contents: new Buffer(contents)
+    contents: new Buffer(contents, 'utf8')
   }));
 
   stream.push(null);

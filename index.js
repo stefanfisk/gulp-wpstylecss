@@ -57,11 +57,11 @@ module.exports = function (options) {
   if (options.tags) {
     contents += 'Tags:           ' + options.tags + '\n';
   }
-  if (options.author.name) {
-    contents += 'Author:         ' + options.author.name + '\n';
+  if (options.author) {
+    contents += 'Author:         ' + options.author + '\n';
   }
-  if (options.author.uri) {
-    contents += 'Author URI:     ' + options.author.uri + '\n';
+  if (options.authorUri) {
+    contents += 'Author URI:     ' + options.authorUri + '\n';
   }
   if (options.license) {
     contents += 'License:        ' + options.license + '\n';
